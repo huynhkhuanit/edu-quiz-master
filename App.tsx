@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { LayoutGrid, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Question, QuizState, QuizSettings } from './types';
 import FileUpload from './components/FileUpload';
 import QuizCard from './components/QuizCard';
@@ -200,9 +201,7 @@ const App: React.FC = () => {
                 onClick={() => setShowNavigator(true)}
                 className="flex items-center space-x-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-full text-sm font-medium text-slate-600 transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                </svg>
+                <LayoutGrid className="w-4 h-4" />
                 <span className="hidden sm:inline">{answeredCount}/{gameState.questions.length}</span>
               </button>
 
@@ -272,9 +271,7 @@ const App: React.FC = () => {
                 disabled={gameState.currentIndex === 0}
                 className="flex items-center space-x-2 px-6 py-3 bg-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                </svg>
+                <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Câu trước</span>
               </button>
 
@@ -285,9 +282,7 @@ const App: React.FC = () => {
                 className="flex items-center space-x-2 bg-slate-800 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <span>{gameState.currentIndex === gameState.questions.length - 1 ? 'Hoàn thành' : 'Câu tiếp theo'}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
 

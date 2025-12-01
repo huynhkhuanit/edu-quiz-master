@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useRef } from 'react';
+import { FileSpreadsheet, AlertCircle, Loader2 } from 'lucide-react';
 import { parseExcelFile } from '../services/excelService';
 import { Question } from '../types';
 
@@ -109,9 +110,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
       >
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="p-4 bg-indigo-100 rounded-full text-indigo-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-            </svg>
+            <FileSpreadsheet className="w-12 h-12" strokeWidth={1.5} />
           </div>
           
           <div className="text-center">
@@ -144,16 +143,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
 
       {error && (
         <div className="mt-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center animate-pulse">
-           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-          </svg>
+          <AlertCircle className="w-5 h-5 mr-2" />
           {error}
         </div>
       )}
 
       {loading && (
         <div className="mt-6 flex items-center space-x-2 text-indigo-600">
-          <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <Loader2 className="w-5 h-5 animate-spin" />
           <span>Đang xử lý dữ liệu...</span>
         </div>
       )}

@@ -1,4 +1,19 @@
 import React, { useMemo, useState } from 'react';
+import { 
+  Trophy, 
+  ThumbsUp, 
+  Frown, 
+  RefreshCcw, 
+  Download, 
+  ChevronDown, 
+  ChevronUp, 
+  BarChart3, 
+  FileText,
+  CheckCircle2,
+  XCircle,
+  Check,
+  X
+} from 'lucide-react';
 import { Question } from '../types';
 
 interface ResultViewProps {
@@ -47,17 +62,17 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, onResta
   let message = "Cần cố gắng hơn!";
   let color = "text-red-600";
   let bgColor = "bg-red-50";
-  let emoji = "😔";
+  let ScoreIcon = Frown;
   if (score >= 8) {
       message = "Xuất sắc!";
       color = "text-green-600";
       bgColor = "bg-green-50";
-      emoji = "🎉";
+      ScoreIcon = Trophy;
   } else if (score >= 5) {
       message = "Khá tốt!";
       color = "text-blue-600";
       bgColor = "bg-blue-50";
-      emoji = "👍";
+      ScoreIcon = ThumbsUp;
   }
 
   // Export results to text
@@ -104,7 +119,9 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, onResta
       {/* Main Score Card */}
       <div className={`bg-white rounded-3xl shadow-xl overflow-hidden`}>
         <div className={`${bgColor} p-8 text-center border-b`}>
-          <div className="text-6xl mb-4">{emoji}</div>
+          <div className="flex justify-center mb-4">
+            <ScoreIcon className={`w-16 h-16 ${color}`} strokeWidth={1.5} />
+          </div>
           <h2 className="text-3xl font-bold text-slate-800 mb-2">Kết quả bài thi</h2>
           <div className={`text-6xl font-extrabold ${color} mb-4`}>{score}/10</div>
           <p className={`text-xl font-medium ${color}`}>{message}</p>
@@ -136,21 +153,22 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, onResta
         <div className="p-6 flex flex-wrap gap-3 justify-center">
           <button
             onClick={onRestart}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-transform transform active:scale-95 shadow-lg shadow-indigo-200"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-transform transform active:scale-95 shadow-lg shadow-indigo-200"
           >
-            🔄 Làm bài mới
+            <RefreshCcw className="w-4 h-4" /> Làm bài mới
           </button>
           <button
             onClick={exportResults}
-            className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-transform transform active:scale-95"
+            className="flex items-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-transform transform active:scale-95"
           >
-            📥 Xuất kết quả
+            <Download className="w-4 h-4" /> Xuất kết quả
           </button>
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-transform transform active:scale-95"
+            className="flex items-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-transform transform active:scale-95"
           >
-            {showDetails ? '🔼 Ẩn chi tiết' : '🔽 Xem chi tiết'}
+            {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {showDetails ? 'Ẩn chi tiết' : 'Xem chi tiết'}
           </button>
         </div>
       </div>
@@ -158,7 +176,7 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, onResta
       {/* Topic Statistics */}
       <div className="bg-white rounded-3xl shadow-xl p-6">
         <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center">
-          <span className="mr-2">📊</span> Thống kê theo chủ đề
+          <BarChart3 className="w-5 h-5 mr-2" /> Thống kê theo chủ đề
         </h3>
         <div className="space-y-3">
           {Object.entries(topicStats).map(([topic, stats]) => {
@@ -192,7 +210,7 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, onResta
         <div className="bg-white rounded-3xl shadow-xl p-6 animate-fade-in">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-slate-800 flex items-center">
-              <span className="mr-2">📝</span> Chi tiết đáp án
+              <FileText className="w-5 h-5 mr-2" /> Chi tiết đáp án
             </h3>
             
             {/* Topic Filter */}
@@ -236,16 +254,12 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, onResta
                     <span className={`text-sm font-bold flex items-center ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
                       {isCorrect ? (
                         <>
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-                          </svg>
+                          <CheckCircle2 className="w-4 h-4 mr-1" />
                           Đúng
                         </>
                       ) : (
                         <>
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
-                          </svg>
+                          <XCircle className="w-4 h-4 mr-1" />
                           Sai
                         </>
                       )}
@@ -271,14 +285,10 @@ const ResultView: React.FC<ResultViewProps> = ({ questions, userAnswers, onResta
                           <span className="font-bold mr-2">{opt}.</span>
                           <span className="flex-1">{q.options[opt]}</span>
                           {isCorrectAnswer && (
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-green-600">
-                              <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                            </svg>
+                            <Check className="w-4 h-4 text-green-600" />
                           )}
                           {isUserAnswer && !isCorrectAnswer && (
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-red-600">
-                              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                            </svg>
+                            <X className="w-4 h-4 text-red-600" />
                           )}
                         </div>
                       );
