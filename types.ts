@@ -22,13 +22,24 @@ export interface Question {
   topic: string;
 }
 
+export interface QuizSettings {
+  numberOfQuestions: number;
+  shuffleQuestions: boolean;
+  selectedTopics: string[];
+  timeLimit: number; // in minutes, 0 = no limit
+}
+
 export interface QuizState {
   questions: Question[];
+  allQuestions: Question[]; // Store all questions for settings
   currentIndex: number;
   userAnswers: Record<number, 'A' | 'B' | 'C' | 'D'>; // Map question ID to answer
   score: number;
   isFinished: boolean;
-  viewMode: 'upload' | 'quiz' | 'results';
+  viewMode: 'upload' | 'settings' | 'quiz' | 'results';
+  settings: QuizSettings;
+  startTime: number | null; // timestamp when quiz started
+  endTime: number | null; // timestamp when quiz ended
 }
 
 export enum AnswerStatus {

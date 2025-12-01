@@ -75,6 +75,76 @@ export const generateSampleData = (): Question[] => {
             options: { A: "CO2", B: "H2O", C: "O2", D: "NaCl" },
             correctAnswer: "B",
             topic: "Hóa học"
+        },
+        {
+            id: 3,
+            text: "Sông nào dài nhất Việt Nam?",
+            options: { A: "Sông Hồng", B: "Sông Mekong", C: "Sông Đà", D: "Sông Đồng Nai" },
+            correctAnswer: "B",
+            topic: "Địa lý"
+        },
+        {
+            id: 4,
+            text: "1 + 1 bằng bao nhiêu?",
+            options: { A: "1", B: "2", C: "3", D: "4" },
+            correctAnswer: "B",
+            topic: "Toán học"
+        },
+        {
+            id: 5,
+            text: "Ai là người phát minh ra bóng đèn điện?",
+            options: { A: "Albert Einstein", B: "Isaac Newton", C: "Thomas Edison", D: "Nikola Tesla" },
+            correctAnswer: "C",
+            topic: "Lịch sử"
+        },
+        {
+            id: 6,
+            text: "Nguyên tố hóa học nào có ký hiệu 'Fe'?",
+            options: { A: "Vàng", B: "Bạc", C: "Sắt", D: "Đồng" },
+            correctAnswer: "C",
+            topic: "Hóa học"
+        },
+        {
+            id: 7,
+            text: "Việt Nam giành độc lập vào năm nào?",
+            options: { A: "1944", B: "1945", C: "1946", D: "1954" },
+            correctAnswer: "B",
+            topic: "Lịch sử"
+        },
+        {
+            id: 8,
+            text: "Diện tích hình vuông cạnh a được tính bằng công thức nào?",
+            options: { A: "a + a", B: "4a", C: "a × a", D: "2a" },
+            correctAnswer: "C",
+            topic: "Toán học"
+        },
+        {
+            id: 9,
+            text: "Đỉnh núi cao nhất Việt Nam là gì?",
+            options: { A: "Fansipan", B: "Phu Si Lung", C: "Ngọc Linh", D: "Tây Côn Lĩnh" },
+            correctAnswer: "A",
+            topic: "Địa lý"
+        },
+        {
+            id: 10,
+            text: "Khí CO2 có tên gọi là gì?",
+            options: { A: "Carbon monoxide", B: "Carbon dioxide", C: "Methane", D: "Oxygen" },
+            correctAnswer: "B",
+            topic: "Hóa học"
+        },
+        {
+            id: 11,
+            text: "JavaScript là ngôn ngữ lập trình thuộc loại nào?",
+            options: { A: "Compiled", B: "Interpreted", C: "Assembly", D: "Machine code" },
+            correctAnswer: "B",
+            topic: "Công nghệ"
+        },
+        {
+            id: 12,
+            text: "HTML viết tắt của từ gì?",
+            options: { A: "Hyper Text Markup Language", B: "High Tech Modern Language", C: "Home Tool Markup Language", D: "Hyperlinks Text Mark Language" },
+            correctAnswer: "A",
+            topic: "Công nghệ"
         }
     ];
 };
