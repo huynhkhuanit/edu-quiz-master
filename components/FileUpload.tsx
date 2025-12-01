@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { parseExcelFile } from '../services/excelService';
 import { Question } from '../types';
 
@@ -6,12 +6,51 @@ interface FileUploadProps {
   onDataLoaded: (questions: Question[]) => void;
 }
 
+// Danh sách MIME types và extensions được hỗ trợ
+// Sử dụng nhiều MIME types để tương thích tốt với các thiết bị mobile
+const ACCEPTED_MIME_TYPES = [
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+  'application/vnd.ms-excel', // .xls
+  'application/excel',
+  'application/x-excel',
+  'application/x-msexcel',
+  'application/octet-stream', // Một số thiết bị mobile gửi file Excel với MIME type này
+];
+
+const ACCEPTED_EXTENSIONS = ['.xlsx', '.xls'];
+
+// Tạo accept string tương thích đa nền tảng
+// Kết hợp cả MIME types và extensions để đảm bảo hoạt động trên mọi thiết bị
+const getAcceptString = (): string => {
+  return [
+    ...ACCEPTED_MIME_TYPES,
+    ...ACCEPTED_EXTENSIONS,
+  ].join(',');
+};
+
+// Kiểm tra file có hợp lệ không (dựa vào extension vì MIME type có thể không chính xác trên mobile)
+const isValidFile = (file: File): boolean => {
+  const fileName = file.name.toLowerCase();
+  const hasValidExtension = ACCEPTED_EXTENSIONS.some(ext => fileName.endsWith(ext));
+  const hasValidMimeType = ACCEPTED_MIME_TYPES.includes(file.type) || file.type === '';
+  
+  // Ưu tiên kiểm tra extension vì MIME type không đáng tin cậy trên mobile
+  return hasValidExtension || (hasValidMimeType && fileName.includes('.'));
+};
+
 const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processFile = async (file: File) => {
+    // Kiểm tra file hợp lệ trước khi xử lý
+    if (!isValidFile(file)) {
+      setError("Vui lòng chọn file Excel (.xlsx hoặc .xls)");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -41,6 +80,15 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
     if (e.target.files && e.target.files[0]) {
       processFile(e.target.files[0]);
     }
+    // Reset input để có thể chọn lại cùng file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Xử lý click button để mở file picker (tương thích tốt hơn trên mobile)
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -73,10 +121,22 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
             <p className="text-sm text-slate-500 mt-1">hoặc</p>
           </div>
 
-          <label className="cursor-pointer bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:bg-indigo-700 transition active:transform active:scale-95">
+          <button 
+            type="button"
+            onClick={handleButtonClick}
+            className="cursor-pointer bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:bg-indigo-700 transition active:transform active:scale-95"
+          >
             Chọn file từ máy
-            <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleFileChange} />
-          </label>
+          </button>
+          <input 
+            ref={fileInputRef}
+            type="file" 
+            className="hidden" 
+            accept={getAcceptString()}
+            onChange={handleFileChange}
+            // Các thuộc tính để tương thích tốt hơn trên mobile
+            multiple={false}
+          />
           
           <p className="text-xs text-slate-400 mt-4">Hỗ trợ định dạng .xlsx, .xls với các cột: STT, Câu hỏi, Đáp án A-D, Đáp án đúng, Chủ đề</p>
         </div>
