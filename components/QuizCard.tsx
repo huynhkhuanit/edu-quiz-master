@@ -84,7 +84,7 @@ const QuizCard: React.FC<QuizCardProps> = ({
 
           <div className="space-y-3">
             {(['A', 'B', 'C', 'D'] as const).map((optionKey, index) => {
-              const optionText = question[`option${optionKey}` as keyof Question] as string;
+              const optionText = question.options[optionKey];
               
               return (
                 <motion.button

@@ -64,7 +64,7 @@ const Profile: React.FC = () => {
   }, [user, navigate]);
 
   const fetchData = async () => {
-    if (!user) return;
+    if (!user || !supabase) return;
     
     setLoading(true);
     try {
@@ -111,7 +111,7 @@ const Profile: React.FC = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!user) return;
+    if (!user || !supabase) return;
 
     setSaving(true);
     try {

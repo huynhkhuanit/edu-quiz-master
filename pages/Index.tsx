@@ -138,7 +138,7 @@ const Index: React.FC = () => {
     }));
 
     // Save to database if user is logged in
-    if (user) {
+    if (user && supabase) {
       try {
         const { error } = await supabase.from('quiz_history').insert({
           user_id: user.id,

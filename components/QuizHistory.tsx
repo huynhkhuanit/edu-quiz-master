@@ -24,7 +24,10 @@ const QuizHistory: React.FC<QuizHistoryProps> = ({ onClose }) => {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!user) return;
+      if (!user || !supabase) {
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('quiz_history')
