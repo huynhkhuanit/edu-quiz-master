@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import Markdown from 'react-markdown';
-import { CheckCircle2, XCircle, Sparkles, Loader2 } from 'lucide-react';
-import { Question } from '../types';
-import { explainAnswer } from '../services/geminiService';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
+import { Question, AnswerOption } from '@/types';
 
 interface QuizCardProps {
   question: Question;
   currentNumber: number;
   totalQuestions: number;
-  onAnswer: (answer: 'A' | 'B' | 'C' | 'D') => void;
-  selectedAnswer: 'A' | 'B' | 'C' | 'D' | undefined;
+  onAnswer: (answer: AnswerOption) => void;
+  selectedAnswer: AnswerOption | undefined;
 }
 
 const QuizCard: React.FC<QuizCardProps> = ({
@@ -19,130 +18,149 @@ const QuizCard: React.FC<QuizCardProps> = ({
   onAnswer,
   selectedAnswer
 }) => {
-  const [explanation, setExplanation] = useState<string | null>(null);
-  const [loadingExplanation, setLoadingExplanation] = useState(false);
-
-  // Reset explanation when question changes
-  useEffect(() => {
-    setExplanation(null);
-    setLoadingExplanation(false);
-  }, [question.id]);
-
-  const handleExplain = async () => {
-    setLoadingExplanation(true);
-    // Pass the selectedAnswer to the service for context-aware explanation
-    const text = await explainAnswer(question, selectedAnswer);
-    setExplanation(text);
-    setLoadingExplanation(false);
-  };
+  const [showExplanation, setShowExplanation] = useState(false);
 
   const isAnswered = selectedAnswer !== undefined;
-  // If answered, we still highlight if it's correct/wrong
   const isCorrect = selectedAnswer === question.correctAnswer;
 
+  const getOptionStyle = (optionKey: AnswerOption) => {
+    const isSelected = selectedAnswer === optionKey;
+    const isThisCorrect = question.correctAnswer === optionKey;
+
+    if (!isAnswered) {
+      return 'border-border bg-card hover:border-primary/50 hover:bg-primary/5 cursor-pointer';
+    }
+
+    if (isThisCorrect) {
+      return 'border-success bg-success/10 text-success';
+    }
+
+    if (isSelected && !isThisCorrect) {
+      return 'border-destructive bg-destructive/10 text-destructive';
+    }
+
+    return 'border-border bg-muted/50 opacity-60';
+  };
+
+  const getOptionIcon = (optionKey: AnswerOption) => {
+    if (!isAnswered) return null;
+
+    const isThisCorrect = question.correctAnswer === optionKey;
+    const isSelected = selectedAnswer === optionKey;
+
+    if (isThisCorrect) {
+      return <CheckCircle2 className="w-5 h-5 text-success" />;
+    }
+
+    if (isSelected && !isThisCorrect) {
+      return <XCircle className="w-5 h-5 text-destructive" />;
+    }
+
+    return null;
+  };
+
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
-      {/* Header */}
-      <div className="bg-indigo-600 px-6 py-4 flex justify-between items-center text-white">
-        <span className="font-bold text-lg opacity-90">{question.topic}</span>
-        <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
-          Câu {currentNumber} / {totalQuestions}
-        </span>
-      </div>
-
-      {/* Question Body */}
-      <div className="p-8">
-        <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-8 leading-relaxed">
-          {question.text}
-        </h2>
-
-        <div className="space-y-3">
-          {(['A', 'B', 'C', 'D'] as const).map((optionKey) => {
-            const isSelected = selectedAnswer === optionKey;
-            const isThisCorrect = question.correctAnswer === optionKey;
-            
-            // Logic for styling based on state (answered, correct/incorrect)
-            let buttonStyle = "border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700";
-            
-            if (isAnswered) {
-              if (isSelected && isThisCorrect) {
-                // Correct selected: Green border + Green bg
-                buttonStyle = "border-green-500 bg-green-50 text-green-700 font-medium";
-              } else if (isSelected && !isThisCorrect) {
-                // Wrong selected: Single Red border + Red bg (Removed ring-2 for cleaner look)
-                buttonStyle = "border-red-500 bg-red-50 text-red-700 font-medium";
-              } else if (isThisCorrect) {
-                 // Reveal correct answer if user was wrong: Green border
-                buttonStyle = "border-green-500 bg-green-50 text-green-700";
-              } else {
-                // Other options: Dimmed
-                buttonStyle = "border-slate-100 text-slate-400 opacity-60";
-              }
-            } else if (isSelected) {
-               // Pre-submission selection
-               buttonStyle = "border-indigo-500 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-500";
-            }
-
-            return (
-              <button
-                key={optionKey}
-                onClick={() => !isAnswered && onAnswer(optionKey)}
-                disabled={isAnswered}
-                className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-start group ${buttonStyle}`}
-              >
-                <span className={`w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg mr-4 font-bold text-sm border ${
-                    isSelected || (isAnswered && isThisCorrect) ? 'border-current' : 'border-slate-300 group-hover:border-indigo-400'
-                }`}>
-                  {optionKey}
-                </span>
-                <span className="font-medium text-lg pt-0.5">{question.options[optionKey]}</span>
-                
-                {isAnswered && isThisCorrect && (
-                  <CheckCircle2 className="w-6 h-6 ml-auto text-green-600" />
-                )}
-                 {isAnswered && isSelected && !isThisCorrect && (
-                  <XCircle className="w-6 h-6 ml-auto text-red-600" />
-                )}
-              </button>
-            );
-          })}
+    <motion.div
+      key={question.id}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="w-full max-w-3xl mx-auto"
+    >
+      <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
+        {/* Header */}
+        <div className="gradient-primary px-6 py-4 flex justify-between items-center">
+          <span className="text-primary-foreground font-medium opacity-90">{question.topic}</span>
+          <span className="bg-primary-foreground/20 px-4 py-1.5 rounded-full text-sm font-semibold text-primary-foreground backdrop-blur-sm">
+            Câu {currentNumber} / {totalQuestions}
+          </span>
         </div>
 
-        {/* Action Area */}
-        {isAnswered && (
-            <div className="mt-6 pt-6 border-t border-slate-100 animate-fade-in">
-                 {/* AI Explanation Button */}
-                 {!explanation && !loadingExplanation && (
-                    <button 
-                        onClick={handleExplain}
-                        className="flex items-center text-indigo-600 hover:text-indigo-800 font-medium text-sm transition-colors mb-4 p-2 hover:bg-indigo-50 rounded-lg"
-                    >
-                        <Sparkles className="w-5 h-5 mr-2" />
-                        Phân tích chuyên sâu (Hỏi AI)
-                    </button>
-                 )}
+        {/* Question Body */}
+        <div className="p-6 md:p-8">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-8 leading-relaxed">
+            {question.text}
+          </h2>
 
-                 {loadingExplanation && (
-                     <div className="flex items-center text-slate-500 text-sm mb-4">
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        AI đang phân tích câu trả lời...
-                     </div>
-                 )}
+          <div className="space-y-3">
+            {(['A', 'B', 'C', 'D'] as const).map((optionKey, index) => {
+              const optionText = question[`option${optionKey}` as keyof Question] as string;
+              
+              return (
+                <motion.button
+                  key={optionKey}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => !isAnswered && onAnswer(optionKey)}
+                  disabled={isAnswered}
+                  className={`
+                    w-full p-4 rounded-xl border-2 text-left transition-all
+                    flex items-center gap-4 group
+                    ${getOptionStyle(optionKey)}
+                  `}
+                >
+                  <span className={`
+                    w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm
+                    transition-all flex-shrink-0
+                    ${selectedAnswer === optionKey || (!isAnswered && 'group-hover:bg-primary group-hover:text-primary-foreground')
+                      ? question.correctAnswer === optionKey && isAnswered
+                        ? 'bg-success text-success-foreground'
+                        : selectedAnswer === optionKey && isAnswered
+                          ? 'bg-destructive text-destructive-foreground'
+                          : 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                    }
+                  `}>
+                    {optionKey}
+                  </span>
+                  <span className="flex-1 text-foreground font-medium">{optionText}</span>
+                  {getOptionIcon(optionKey)}
+                </motion.button>
+              );
+            })}
+          </div>
 
-                 {explanation && (
-                     <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 mb-4 text-slate-800 text-sm leading-relaxed shadow-sm">
-                         <div className="flex items-center mb-3 font-bold text-indigo-700 border-b border-indigo-100 pb-2">
-                             <Sparkles className="w-5 h-5 mr-2" /> Phân tích chuyên gia:
-                         </div>
-                         <div className="markdown-body">
-                             <Markdown>{explanation}</Markdown>
-                         </div>
-                     </div>
-                 )}
-            </div>
-        )}
+          {/* Result Feedback */}
+          <AnimatePresence>
+            {isAnswered && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className={`
+                  mt-6 p-4 rounded-xl flex items-center gap-3
+                  ${isCorrect 
+                    ? 'bg-success/10 border border-success/20' 
+                    : 'bg-destructive/10 border border-destructive/20'
+                  }
+                `}
+              >
+                {isCorrect ? (
+                  <>
+                    <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-success">Chính xác!</p>
+                      <p className="text-sm text-success/80">Bạn đã trả lời đúng câu hỏi này.</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-6 h-6 text-destructive flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-destructive">Chưa đúng</p>
+                      <p className="text-sm text-destructive/80">
+                        Đáp án đúng là: <strong>{question.correctAnswer}</strong>
+                      </p>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Clock } from 'lucide-react';
 
 interface TimerProps {
-  timeLimit: number; // in minutes, 0 = no limit
+  timeLimit: number;
   startTime: number | null;
   onTimeUp: () => void;
   isRunning: boolean;
@@ -30,7 +30,6 @@ const Timer: React.FC<TimerProps> = ({ timeLimit, startTime, onTimeUp, isRunning
       const elapsedSeconds = Math.floor((now - startTime) / 1000);
       setElapsed(elapsedSeconds);
 
-      // Check if time is up (only if there's a time limit)
       if (timeLimit > 0) {
         const timeLimitSeconds = timeLimit * 60;
         if (elapsedSeconds >= timeLimitSeconds) {
@@ -42,21 +41,22 @@ const Timer: React.FC<TimerProps> = ({ timeLimit, startTime, onTimeUp, isRunning
     return () => clearInterval(interval);
   }, [isRunning, startTime, timeLimit, onTimeUp]);
 
-  // Calculate remaining time for countdown mode
   const remaining = timeLimit > 0 ? Math.max(0, timeLimit * 60 - elapsed) : elapsed;
   const isCountdown = timeLimit > 0;
-  const isLowTime = isCountdown && remaining < 60; // Less than 1 minute
-  const isWarning = isCountdown && remaining < 300 && remaining >= 60; // Less than 5 minutes
+  const isLowTime = isCountdown && remaining < 60;
+  const isWarning = isCountdown && remaining < 300 && remaining >= 60;
 
   return (
-    <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm font-mono font-semibold transition-colors ${
-      isLowTime 
-        ? 'bg-red-100 text-red-600 animate-pulse' 
+    <div className={`
+      flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-mono font-semibold transition-all
+      ${isLowTime 
+        ? 'bg-destructive/10 text-destructive animate-pulse border border-destructive/20' 
         : isWarning 
-          ? 'bg-amber-100 text-amber-600'
-          : 'bg-slate-100 text-slate-600'
-    }`}>
-      <Clock className="w-4 h-4" strokeWidth={2} />
+          ? 'bg-warning/10 text-warning-foreground border border-warning/20'
+          : 'bg-muted text-muted-foreground border border-border'
+      }
+    `}>
+      <Clock className="w-4 h-4" />
       <span>{isCountdown ? formatTime(remaining) : formatTime(elapsed)}</span>
       {isCountdown && (
         <span className="text-xs opacity-60">còn lại</span>

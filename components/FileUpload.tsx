@@ -1,52 +1,42 @@
 import React, { useCallback, useState, useRef } from 'react';
-import { FileSpreadsheet, AlertCircle, Loader2 } from 'lucide-react';
-import { parseExcelFile } from '../services/excelService';
-import { Question } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FileSpreadsheet, AlertCircle, Loader2, Upload, CheckCircle } from 'lucide-react';
+import { parseExcelFile } from '@/services/excelService';
+import { Question } from '@/types';
 
 interface FileUploadProps {
   onDataLoaded: (questions: Question[]) => void;
 }
 
-// Danh sách MIME types và extensions được hỗ trợ
-// Sử dụng nhiều MIME types để tương thích tốt với các thiết bị mobile
 const ACCEPTED_MIME_TYPES = [
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-  'application/vnd.ms-excel', // .xls
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
   'application/excel',
   'application/x-excel',
   'application/x-msexcel',
-  'application/octet-stream', // Một số thiết bị mobile gửi file Excel với MIME type này
+  'application/octet-stream',
 ];
 
 const ACCEPTED_EXTENSIONS = ['.xlsx', '.xls'];
 
-// Tạo accept string tương thích đa nền tảng
-// Kết hợp cả MIME types và extensions để đảm bảo hoạt động trên mọi thiết bị
 const getAcceptString = (): string => {
-  return [
-    ...ACCEPTED_MIME_TYPES,
-    ...ACCEPTED_EXTENSIONS,
-  ].join(',');
+  return [...ACCEPTED_MIME_TYPES, ...ACCEPTED_EXTENSIONS].join(',');
 };
 
-// Kiểm tra file có hợp lệ không (dựa vào extension vì MIME type có thể không chính xác trên mobile)
 const isValidFile = (file: File): boolean => {
   const fileName = file.name.toLowerCase();
   const hasValidExtension = ACCEPTED_EXTENSIONS.some(ext => fileName.endsWith(ext));
-  const hasValidMimeType = ACCEPTED_MIME_TYPES.includes(file.type) || file.type === '';
-  
-  // Ưu tiên kiểm tra extension vì MIME type không đáng tin cậy trên mobile
-  return hasValidExtension || (hasValidMimeType && fileName.includes('.'));
+  return hasValidExtension;
 };
 
 const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processFile = async (file: File) => {
-    // Kiểm tra file hợp lệ trước khi xử lý
     if (!isValidFile(file)) {
       setError("Vui lòng chọn file Excel (.xlsx hoặc .xls)");
       return;
@@ -54,12 +44,17 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
 
     setLoading(true);
     setError(null);
+    setSuccess(false);
+    
     try {
       const questions = await parseExcelFile(file);
       if (questions.length === 0) {
         setError("File không chứa câu hỏi hợp lệ hoặc sai định dạng.");
       } else {
-        onDataLoaded(questions);
+        setSuccess(true);
+        setTimeout(() => {
+          onDataLoaded(questions);
+        }, 500);
       }
     } catch (err) {
       console.error(err);
@@ -72,89 +67,145 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
-    }
-    // Reset input để có thể chọn lại cùng file
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
 
-  // Xử lý click button để mở file picker (tương thích tốt hơn trên mobile)
-  const handleButtonClick = () => {
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  }, []);
+
+  const handleClick = () => {
     fileInputRef.current?.click();
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full max-w-2xl mx-auto p-6">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-indigo-600 mb-2">EduQuiz Master</h1>
-        <p className="text-slate-500 text-lg">Tải lên ngân hàng câu hỏi của bạn và bắt đầu luyện tập</p>
-      </div>
-
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-xl mx-auto"
+    >
       <div
-        className={`w-full p-10 bg-white rounded-3xl border-4 border-dashed transition-all duration-300 shadow-sm
-          ${isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'}
-          ${loading ? 'opacity-50 pointer-events-none' : ''}
-        `}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-        onDragLeave={() => setIsDragging(false)}
+        onClick={handleClick}
         onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`
+          relative cursor-pointer rounded-2xl border-2 border-dashed p-12
+          transition-all duration-300 ease-out
+          ${isDragging 
+            ? 'border-primary bg-primary/5 scale-[1.02]' 
+            : 'border-border hover:border-primary/50 hover:bg-muted/50'
+          }
+          ${loading ? 'pointer-events-none' : ''}
+          ${success ? 'border-success bg-success/5' : ''}
+        `}
       >
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <div className="p-4 bg-indigo-100 rounded-full text-indigo-600">
-            <FileSpreadsheet className="w-12 h-12" strokeWidth={1.5} />
-          </div>
-          
-          <div className="text-center">
-            <p className="text-lg font-semibold text-slate-700">
-              Kéo thả file Excel vào đây
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={getAcceptString()}
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+
+        <div className="flex flex-col items-center text-center space-y-4">
+          <motion.div 
+            className={`
+              w-20 h-20 rounded-2xl flex items-center justify-center
+              ${success ? 'gradient-success' : 'gradient-primary'}
+              shadow-lg
+            `}
+            animate={loading ? { rotate: 360 } : {}}
+            transition={{ duration: 1, repeat: loading ? Infinity : 0, ease: "linear" }}
+          >
+            {loading ? (
+              <Loader2 className="w-10 h-10 text-primary-foreground" />
+            ) : success ? (
+              <CheckCircle className="w-10 h-10 text-success-foreground" />
+            ) : (
+              <FileSpreadsheet className="w-10 h-10 text-primary-foreground" />
+            )}
+          </motion.div>
+
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-foreground">
+              {loading ? 'Đang xử lý...' : success ? 'Tải lên thành công!' : 'Tải lên file Excel'}
+            </h3>
+            <p className="text-muted-foreground">
+              {loading 
+                ? 'Vui lòng đợi trong giây lát'
+                : success 
+                  ? 'Đang chuyển đến cài đặt...'
+                  : 'Kéo thả hoặc click để chọn file .xlsx, .xls'
+              }
             </p>
-            <p className="text-sm text-slate-500 mt-1">hoặc</p>
           </div>
 
-          <button 
-            type="button"
-            onClick={handleButtonClick}
-            className="cursor-pointer bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:bg-indigo-700 transition active:transform active:scale-95"
-          >
-            Chọn file từ máy
-          </button>
-          <input 
-            ref={fileInputRef}
-            type="file" 
-            className="hidden" 
-            accept={getAcceptString()}
-            onChange={handleFileChange}
-            // Các thuộc tính để tương thích tốt hơn trên mobile
-            multiple={false}
-          />
-          
-          <p className="text-xs text-slate-400 mt-4">Hỗ trợ định dạng .xlsx, .xls với các cột: STT, Câu hỏi, Đáp án A-D, Đáp án đúng, Chủ đề</p>
+          {!loading && !success && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Upload className="w-4 h-4" />
+              <span>Hỗ trợ: Excel (.xlsx, .xls)</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {error && (
-        <div className="mt-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center animate-pulse">
-          <AlertCircle className="w-5 h-5 mr-2" />
-          {error}
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-destructive">{error}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {loading && (
-        <div className="mt-6 flex items-center space-x-2 text-indigo-600">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>Đang xử lý dữ liệu...</span>
+      <div className="mt-8 p-6 bg-muted/50 rounded-xl border border-border">
+        <h4 className="font-semibold text-foreground mb-3">📋 Định dạng file Excel:</h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="py-2 px-3 text-left text-muted-foreground font-medium">Chủ đề</th>
+                <th className="py-2 px-3 text-left text-muted-foreground font-medium">Câu hỏi</th>
+                <th className="py-2 px-3 text-left text-muted-foreground font-medium">A</th>
+                <th className="py-2 px-3 text-left text-muted-foreground font-medium">B</th>
+                <th className="py-2 px-3 text-left text-muted-foreground font-medium">C</th>
+                <th className="py-2 px-3 text-left text-muted-foreground font-medium">D</th>
+                <th className="py-2 px-3 text-left text-muted-foreground font-medium">Đáp án</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="text-foreground">
+                <td className="py-2 px-3">Toán</td>
+                <td className="py-2 px-3">2+2=?</td>
+                <td className="py-2 px-3">3</td>
+                <td className="py-2 px-3">4</td>
+                <td className="py-2 px-3">5</td>
+                <td className="py-2 px-3">6</td>
+                <td className="py-2 px-3 font-semibold text-primary">B</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      )}
-    </div>
+      </div>
+    </motion.div>
   );
 };
 
