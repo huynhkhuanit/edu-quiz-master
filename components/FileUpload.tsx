@@ -14,10 +14,15 @@ const ACCEPTED_MIME_TYPES = [
   'application/excel',
   'application/x-excel',
   'application/x-msexcel',
+  'application/vnd.ms-excel.sheet.macroEnabled.12',
+  'application/vnd.ms-excel.sheet.binary.macroEnabled.12',
+  'text/csv',
+  'application/csv',
+  'text/comma-separated-values',
   'application/octet-stream',
 ];
 
-const ACCEPTED_EXTENSIONS = ['.xlsx', '.xls'];
+const ACCEPTED_EXTENSIONS = ['.xlsx', '.xls', '.xlsm', '.xlsb', '.csv'];
 
 const getAcceptString = (): string => {
   return [...ACCEPTED_MIME_TYPES, ...ACCEPTED_EXTENSIONS].join(',');
@@ -38,7 +43,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
 
   const processFile = async (file: File) => {
     if (!isValidFile(file)) {
-      setError("Vui lòng chọn file Excel (.xlsx hoặc .xls)");
+      setError("Vui lòng chọn file Excel (.xlsx, .xls, .xlsm, .xlsb) hoặc CSV (.csv)");
       return;
     }
 
@@ -141,14 +146,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
 
           <div className="space-y-2">
             <h3 className="text-xl font-semibold text-foreground">
-              {loading ? 'Đang xử lý...' : success ? 'Tải lên thành công!' : 'Tải lên file Excel'}
+              {loading ? 'Đang xử lý...' : success ? 'Tải lên thành công!' : 'Tải lên file Excel hoặc CSV'}
             </h3>
             <p className="text-muted-foreground">
               {loading 
                 ? 'Vui lòng đợi trong giây lát'
                 : success 
                   ? 'Đang chuyển đến cài đặt...'
-                  : 'Kéo thả hoặc click để chọn file .xlsx, .xls'
+                  : 'Kéo thả hoặc click để chọn file Excel (.xlsx, .xls, .xlsm, .xlsb) hoặc CSV'
               }
             </p>
           </div>
@@ -156,7 +161,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
           {!loading && !success && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Upload className="w-4 h-4" />
-              <span>Hỗ trợ: Excel (.xlsx, .xls)</span>
+              <span>Hỗ trợ: Excel (.xlsx, .xls, .xlsm, .xlsb) và CSV (.csv)</span>
             </div>
           )}
         </div>
